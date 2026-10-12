@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALAE Bank - Online Loan Payment Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        // Keep startup error-free if the Tailwind CDN is unavailable; the CDN can still apply this config when present.
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#1b2f5b',
+                            900: '#0e1f38',
+                            950: '#091325'
+                        },
+                        gold: {
+                            50: '#fbf8ed',
+                            100: '#f0e6d2',
+                            200: '#dfcc91',
+                            300: '#d4af37',
+                            400: '#d4af37',
+                            500: '#b5975a',
+                            600: '#967a3f',
+                            700: '#765f2e'
+                        },
+                        champagne: '#faf6ee'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+</head>
+<body class="font-sans antialiased text-slate-800 min-h-screen">
+
+    <!-- ========================================== -->
+    <!-- AUTHENTICATION GUARD & LOGIN/REGISTER WALL -->
+    <!-- ========================================== -->
+    <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center navy-gradient px-4 py-8 overflow-y-auto">
+        <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl border border-gold-500/30 overflow-hidden my-auto transform transition-all duration-300">
+            <!-- Full original ALAE logo -->
+            <div class="auth-brand-panel">
+                <img src="alae-bank-logo.png" class="auth-logo" alt="ALAE BANK — All Lending Activities are Equitable">
+                <div class="auth-portal-chip"><span></span> Online Borrower Portal</div>
+            </div>
+
+            <!-- Login / Register Form Body -->
+            <div class="p-6 sm:p-8">
+                <!-- Tab Switching -->
+                <div class="flex border-b border-slate-200 mb-6 text-sm font-semibold">
+                    <button id="tabSignInBtn" onclick="switchAuthMode('signin')" class="flex-1 py-2 text-center border-b-2 border-navy-800 text-navy-800 transition">
+                        <i class="fa-solid fa-lock text-xs mr-1.5"></i> Sign In
+                    </button>
+                    <button id="tabRegisterBtn" onclick="switchAuthMode('register')" class="flex-1 py-2 text-center text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition">
+                        <i class="fa-solid fa-user-plus text-xs mr-1.5"></i> Register Account
+                    </button>
+                </div>
+
+                <!-- Alert Messages -->
+                <div id="authAlert" class="hidden mb-4 p-3 rounded-lg text-xs font-medium flex items-center gap-2"></div>
+
+                <!-- SIGN IN FORM -->
+                <form id="signInForm" onsubmit="handleSignIn(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Email / User ID</label>
+                        <div class="relative">
+                            <i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="email" id="loginEmail" required placeholder="borrower@alae.ph" class="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 focus:border-navy-800 outline-none transition">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
+                            <a href="#" onclick="showToast('Password reset link sent to demo user email.', 'info')" class="text-xs text-gold-600 hover:underline">Forgot?</a>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-key absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 focus:border-navy-800 outline-none transition">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-navy-800 hover:bg-navy-900 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                        <span>Access Payment Portal</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+
+                <!-- REGISTER FORM (Hidden by Default) -->
+                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Borrower Name</label>
+                        <input type="text" id="regName" required placeholder="e.g. Juan De La Cruz" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address</label>
+                        <input type="email" id="regEmail" required placeholder="juan@gmail.com" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Existing Loan Account Number</label>
+                        <input type="text" id="regLoanNo" placeholder="e.g. AL-PL-884920 (or leave blank)" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Create Password</label>
+                        <input type="password" id="regPassword" required placeholder="At least 6 characters" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                        <span>Register New Borrower Account</span>
+                        <i class="fa-solid fa-user-check text-xs"></i>
+                    </button>
+                </form>
+
+                <!-- DEMO ACCESS BUTTON -->
+                <div class="mt-6 pt-5 border-t border-slate-200 text-center">
+                    <p class="text-xs text-slate-500 mb-2">Want to explore instantly as a demo borrower?</p>
+                    <button onclick="fillDemoCredentials()" type="button" class="w-full py-2.5 px-4 bg-gold-50 hover:bg-gold-100 text-gold-700 border border-gold-300 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt text-gold-600"></i>
+                        <span>Instant Demo Login (borrower@alae.ph)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Compliance Notice -->
+            <div class="bg-slate-100 px-6 py-3 text-center text-[10px] text-slate-500 border-t border-slate-200">
+                <i class="fa-solid fa-shield-halved text-gold-600 mr-1"></i> Secured with 256-Bit SSL Encryption | ALAE Bank Batangas
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MAIN AUTHENTICATED WEBSITE PORTAL CONTENT -->
+    <!-- ========================================== -->
+
+    <!-- ALAE BANK LEFT SIDEBAR -->
+    <aside id="appSidebar" class="app-sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+            <a href="#dashboard" class="brand-logo-link" onclick="switchTab('dashboard'); return false;" aria-label="ALAE Bank dashboard">
+                <img src="alae-bank-logo.png" class="brand-logo" alt="ALAE BANK — All Lending Activities are Equitable">
+            </a>
+            <div class="sidebar-portal-label">ONLINE BORROWER PORTAL</div>
+        </div>
+        <nav class="sidebar-nav" aria-label="Portal pages">
+            <button type="button" id="nav-dashboard" data-nav-tab="dashboard" class="sidebar-nav-btn active" onclick="switchTab('dashboard')"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+            <button type="button" id="nav-pay" data-nav-tab="pay" class="sidebar-nav-btn" onclick="switchTab('pay')"><i class="fa-regular fa-credit-card"></i><span>Pay Loan</span></button>
+            <button type="button" id="nav-products" data-nav-tab="products" class="sidebar-nav-btn" onclick="switchTab('products')"><i class="fa-solid fa-sack-dollar"></i><span>Loan Products</span></button>
+            <button type="button" id="nav-apply" data-nav-tab="apply" class="sidebar-nav-btn" onclick="switchTab('apply')"><i class="fa-regular fa-file-lines"></i><span>My Applications</span></button>
+            <button type="button" id="nav-history" data-nav-tab="history" class="sidebar-nav-btn" onclick="switchTab('history')"><i class="fa-regular fa-clipboard"></i><span>Payment History</span></button>
+            <button type="button" id="nav-profile" data-nav-tab="profile" class="sidebar-nav-btn" onclick="switchTab('profile')"><i class="fa-regular fa-user"></i><span>Profile</span></button>
+            <button type="button" id="nav-faq" data-nav-tab="faq" class="sidebar-nav-btn" onclick="switchTab('faq')"><i class="fa-solid fa-shield-halved"></i><span>Security & Help</span></button>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-status"><span class="status-dot"></span> Demonstration portal</div>
+            <button type="button" class="sidebar-logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i><span>Log out</span></button>
+        </div>
+    </aside>
+
+    <!-- TOP BAR -->
+    <header id="appTopbar" class="app-topbar">
+        <div class="topbar-left">
+            <button type="button" id="sidebarToggle" class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+            <div class="topbar-title-wrap">
+                <span class="topbar-overline">ALAE BANK</span>
+                <span class="topbar-title">Online Loan & Payment Portal</span>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <button type="button" onclick="toggleNotifications()" class="notification-button" title="Notifications" aria-label="Notifications">
+                <i class="fa-regular fa-bell"></i><span id="notificationBadge" class="notification-badge">2</span>
+            </button>
+            <button type="button" onclick="switchTab('profile')" class="topbar-profile" aria-label="Open profile">
+                <span id="userInitials" class="user-avatar">JD</span>
+                <span class="topbar-user-text"><strong id="userDisplayName">Juan De La Cruz</strong><small id="userDisplayAcc">AL-PL-884920</small></span>
+                <i class="fa-solid fa-chevron-down user-chevron"></i>
+            </button>
+            <button type="button" class="topbar-logout" onclick="handleLogout()" aria-label="Log out" title="Log out"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+    </header>
+
+    <!-- MOBILE SIDEBAR NAVIGATION -->
+    <div id="mobileSidebarScrim" class="mobile-sidebar-scrim" onclick="toggleSidebar(false)"></div>
+    <nav class="mobile-bottom-nav" aria-label="Quick navigation">
+        <button type="button" data-nav-tab="dashboard" onclick="switchTab('dashboard')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+        <button type="button" data-nav-tab="pay" onclick="switchTab('pay')"><i class="fa-regular fa-credit-card"></i><span>Pay</span></button>
+        <button type="button" data-nav-tab="products" onclick="switchTab('products')"><i class="fa-solid fa-sack-dollar"></i><span>Loans</span></button>
+        <button type="button" data-nav-tab="history" onclick="switchTab('history')"><i class="fa-regular fa-clipboard"></i><span>History</span></button>
+        <button type="button" data-nav-tab="profile" onclick="switchTab('profile')"><i class="fa-regular fa-user"></i><span>Profile</span></button>
+    </nav>
+
+
+    <!-- Notification Center -->
+    <div id="notificationPanel" class="hidden fixed top-24 right-4 sm:right-8 z-40 w-[calc(100%-2rem)] sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="p-4 bg-navy-900 text-white flex items-center justify-between">
+            <div><h3 class="font-serif font-bold">Notifications</h3><p class="text-[10px] text-slate-300">Account and payment alerts</p></div>
+            <button onclick="markNotificationsRead()" class="text-[10px] text-gold-300 font-bold hover:text-gold-200">Mark all read</button>
+        </div>
+        <div id="notificationList" class="divide-y divide-slate-100">
+            <button onclick="switchTab('pay'); toggleNotifications()" class="w-full text-left p-4 hover:bg-slate-50 transition"><div class="flex gap-3"><i class="fa-solid fa-calendar-check text-gold-600 mt-1"></i><div><b class="text-xs text-navy-900">Payment Reminder</b><p class="text-[11px] text-slate-500 mt-0.5">Your next loan installment is due soon.</p></div></div></button>
+            <button onclick="switchTab('history'); toggleNotifications()" class="w-full text-left p-4 hover:bg-slate-50 transition"><div class="flex gap-3"><i class="fa-solid fa-shield-halved text-emerald-600 mt-1"></i><div><b class="text-xs text-navy-900">Security Notice</b><p class="text-[11px] text-slate-500 mt-0.5">Review your recent account activity regularly.</p></div></div></button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT BODY CONTAINER -->
+    <main id="appMain" class="app-main max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: USER DASHBOARD OVERVIEW -->
+        <!-- ========================================== -->
+                <section id="view-dashboard" class="app-section dashboard-section space-y-6">
+            <div class="dashboard-heading">
+                <div>
+                    <div class="eyebrow"><span class="status-dot"></span> ACCOUNT OVERVIEW</div>
+                    <h1>Welcome back, <span id="dashWelcomeName">Juan De La Cruz</span>!</h1>
+                    <p>Here’s an overview of your account.</p>
+                </div>
+                <button type="button" class="dashboard-heading-action" onclick="switchTab('history')"><i class="fa-regular fa-clock"></i> View activity</button>
+            </div>
+
+            <div class="dashboard-summary-grid">
+                <article class="summary-card">
+                    <div class="summary-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="summary-main"><span>Outstanding Balance</span><strong id="dashBalance">₱145,200.00</strong><small>Account: <b id="dashAccountNo">AL-PL-884920</b></small></div>
+                    <button type="button" class="summary-link" onclick="switchTab('pay')">Make a payment <i class="fa-solid fa-arrow-right"></i></button>
+                </article>
+                <article class="summary-card">
+                    <div class="summary-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                    <div class="summary-main"><span>Next Due Date</span><strong id="dashDueDate">Oct 25, 2026</strong><small>Monthly installment <b id="dashMonthly">₱8,750.00</b></small></div>
+                    <button type="button" class="summary-link" onclick="switchTab('pay')">View payment options <i class="fa-solid fa-arrow-right"></i></button>
+                </article>
+                <article class="summary-card">
+                    <div class="summary-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <div class="summary-main"><span>Active Loan Accounts</span><strong>2</strong><small>Linked to your profile</small></div>
+                    <button type="button" class="summary-link" onclick="switchTab('products')">View loan products <i class="fa-solid fa-arrow-right"></i></button>
+                </article>
+            </div>
+
+            <div class="dashboard-promo">
+                <div class="promo-brand"><img src="alae-bank-logo.png" alt="ALAE BANK — All Lending Activities are Equitable"></div>
+                <div class="promo-accent" aria-hidden="true"></div>
+                <div class="promo-copy"><span>ALAE BANK</span><strong><span class="slogan-gold">&quot;Building Brighter Futures,</span> <span class="slogan-white">Putting Your Goals First.&quot;</span></strong></div>
+            </div>
+
+            <div class="quick-actions-block">
+                <div class="section-heading-row"><h2>Quick Actions</h2><span>Manage your account</span></div>
+                <div class="quick-action-grid">
+                    <button type="button" class="quick-action-card" onclick="switchTab('pay')"><span class="quick-action-icon"><i class="fa-regular fa-credit-card"></i></span><span><strong>Pay Loan</strong><small>Pay an installment</small></span><i class="fa-solid fa-chevron-right action-chevron"></i></button>
+                    <button type="button" class="quick-action-card" onclick="switchTab('apply')"><span class="quick-action-icon"><i class="fa-regular fa-file-lines"></i></span><span><strong>Apply for Loan</strong><small>Start an application</small></span><i class="fa-solid fa-chevron-right action-chevron"></i></button>
+                    <button type="button" class="quick-action-card" onclick="switchTab('products')"><span class="quick-action-icon"><i class="fa-solid fa-layer-group"></i></span><span><strong>Loan Products</strong><small>Explore financing</small></span><i class="fa-solid fa-chevron-right action-chevron"></i></button>
+                    <button type="button" class="quick-action-card" onclick="switchTab('history')"><span class="quick-action-icon"><i class="fa-regular fa-clock"></i></span><span><strong>Payment History</strong><small>View transactions</small></span><i class="fa-solid fa-chevron-right action-chevron"></i></button>
+                </div>
+            </div>
+
+            <div class="dashboard-lower-grid">
+                <section class="dashboard-panel loan-products-preview">
+                    <div class="dashboard-panel-heading"><div><h2>Loan Products</h2><p>Find a financing option for your needs.</p></div><button type="button" class="text-link" onclick="switchTab('products')">View all <i class="fa-solid fa-arrow-right"></i></button></div>
+                    <div class="mini-product-grid">
+                        <button type="button" class="mini-product-card" onclick="applyForProduct('Personal Loan')"><span class="mini-product-icon"><i class="fa-solid fa-user"></i></span><span><strong>Personal Loan</strong><small>Flexible personal financing</small><em>Learn more →</em></span></button>
+                        <button type="button" class="mini-product-card" onclick="applyForProduct('Business Loan')"><span class="mini-product-icon"><i class="fa-solid fa-briefcase"></i></span><span><strong>Business Loan</strong><small>Support business growth</small><em>Learn more →</em></span></button>
+                        <button type="button" class="mini-product-card" onclick="applyForProduct('Mortgage')"><span class="mini-product-icon"><i class="fa-solid fa-house"></i></span><span><strong>Mortgage</strong><small>Home and property financing</small><em>Learn more →</em></span></button>
+                        <button type="button" class="mini-product-card" onclick="applyForProduct('Vehicle')"><span class="mini-product-icon"><i class="fa-solid fa-car"></i></span><span><strong>Vehicle Loan</strong><small>Financing for your next vehicle</small><em>Learn more →</em></span></button>
+                    </div>
+                </section>
+
+                <section class="dashboard-panel recent-payments-preview">
+                    <div class="dashboard-panel-heading"><div><h2>Recent Payments</h2><p>Your latest account activity.</p></div><button type="button" class="text-link" onclick="switchTab('history')">View history <i class="fa-solid fa-arrow-right"></i></button></div>
+                    <div id="dashboardRecentPayments" class="recent-payments-list"><div class="recent-empty">Your recent payment records will appear here.</div></div>
+                    <button type="button" class="panel-wide-button" onclick="switchTab('pay')"><i class="fa-regular fa-credit-card"></i> Make a payment</button>
+                </section>
+
+                <section class="dashboard-panel dashboard-application-panel">
+                    <div class="dashboard-panel-heading"><div><h2>Loan Applications</h2><p>Track a new financing request.</p></div><span class="panel-heading-icon"><i class="fa-regular fa-file-lines"></i></span></div>
+                    <div class="application-preview-graphic"><span class="preview-step done">1</span><i></i><span class="preview-step">2</span><i></i><span class="preview-step">3</span></div>
+                    <h3>Need additional financing?</h3>
+                    <p>Choose a product and submit your details. You can review the status of your requests anytime.</p>
+                    <button type="button" class="panel-wide-button gold-button" onclick="switchTab('apply')">Start an application <i class="fa-solid fa-arrow-right"></i></button>
+                    <button type="button" class="panel-secondary-button" onclick="switchTab('apply')">View my applications</button>
+                </section>
+            </div>
+
+            <div class="dashboard-bottom-strip">
+                <div><span class="bottom-strip-icon"><i class="fa-solid fa-shield-halved"></i></span><span><strong>Security & privacy</strong><small>Review portal security information and account guidance.</small></span></div>
+                <button type="button" onclick="switchTab('faq')">Visit security center <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="prototype-disclaimer"><i class="fa-solid fa-circle-info"></i> Demonstration website only. Payments are simulated and are not sent to a real bank or payment provider.</div>
+        </section>
+
+<!-- ========================================== -->
+        <!-- TAB 2: INTERACTIVE MULTI-STEP PAYMENT CONSOLE -->
+        <!-- ========================================== -->
+        <section id="view-pay" class="hidden space-y-6">
+            <!-- Payment Console Container -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                <!-- Console Top Header -->
+                <div class="navy-gradient px-6 py-5 text-white flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="font-serif text-xl font-bold">Online Loan Payment Console</h2>
+                        <p class="text-xs text-slate-300 mt-0.5">Fast, secure, and instant electronic repayment portal</p>
+                    </div>
+                    <div class="text-xs bg-gold-500/20 text-gold-300 border border-gold-400/30 px-3 py-1.5 rounded-lg font-mono">
+                        <i class="fa-solid fa-lock mr-1"></i> SSL Encrypted Gateway
+                    </div>
+                </div>
+
+                <!-- Step Progress Bar -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-4">
+                    <div class="flex justify-between max-w-3xl mx-auto">
+                        <!-- Step 1 Indicator -->
+                        <div id="step-ind-1" class="flex items-center gap-2 font-bold text-xs text-navy-800">
+                            <span class="w-6 h-6 rounded-full bg-navy-800 text-white flex items-center justify-center text-xs">1</span>
+                            <span class="hidden sm:inline">Account & Amount</span>
+                        </div>
+                        <div class="h-0.5 my-auto flex-1 mx-2 bg-slate-300"></div>
+                        <!-- Step 2 Indicator -->
+                        <div id="step-ind-2" class="flex items-center gap-2 text-xs text-slate-400 font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-xs">2</span>
+                            <span class="hidden sm:inline">Payment Method</span>
+                        </div>
+                        <div class="h-0.5 my-auto flex-1 mx-2 bg-slate-300"></div>
+                        <!-- Step 3 Indicator -->
+                        <div id="step-ind-3" class="flex items-center gap-2 text-xs text-slate-400 font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-xs">3</span>
+                            <span class="hidden sm:inline">Review & Confirm</span>
+                        </div>
+                        <div class="h-0.5 my-auto flex-1 mx-2 bg-slate-300"></div>
+                        <!-- Step 4 Indicator -->
+                        <div id="step-ind-4" class="flex items-center gap-2 text-xs text-slate-400 font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-xs">4</span>
+                            <span class="hidden sm:inline">Receipt</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 1 CONTENT: Select Account & Amount -->
+                <div id="payment-step-1" class="p-6 sm:p-8 max-w-3xl mx-auto space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">1. Select Target Loan Account</label>
+                        <select id="payAccountSelect" onchange="updatePayAccountDetails()" class="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-navy-800 bg-slate-50 font-medium">
+                            <option value="AL-PL-884920">Personal Loan (#AL-PL-884920) - Due: ₱8,750.00</option>
+                            <option value="AL-VH-304912">Vehicle (#AL-VH-304912) - Due: ₱3,200.00</option>
+                            <option value="AL-MG-100492">Mortgage (#AL-MG-100492) - Due: ₱22,000.00</option>
+                            <option value="AL-RE-100492">Real Estate Loan (#AL-RE-100492) - Due: ₱25,000.00</option>
+                            <option value="CUSTOM">-- Enter Other ALAE Account Number --</option>
+                        </select>
+                    </div>
+
+                    <div id="customAccountInputDiv" class="hidden">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Enter ALAE Loan Account Number</label>
+                        <input type="text" id="customAccountInput" placeholder="e.g. AL-VL-992014" class="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">2. Payment Amount (PHP)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3.5 text-lg font-bold text-slate-400">₱</span>
+                            <input type="number" id="payAmountInput" value="8750" min="100" step="50" oninput="calculateBreakdown()" class="w-full pl-10 pr-4 py-3 text-lg font-bold font-mono border border-slate-300 rounded-xl focus:ring-2 focus:ring-navy-800">
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button onclick="setPayAmount(8750)" type="button" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold border">
+                                Regular Due (₱8,750)
+                            </button>
+                            <button onclick="setPayAmount(17500)" type="button" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold border">
+                                2 Months (₱17,500)
+                            </button>
+                            <button onclick="setPayAmount(25000)" type="button" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold border">
+                                Principal Advance (₱25,000)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fee Summary Box -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-sm">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Base Payment Amount:</span>
+                            <span class="font-mono font-semibold" id="summaryBaseAmount">₱8,750.00</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Online Gateway Processing Fee:</span>
+                            <span class="font-mono font-semibold" id="summaryFee">₱15.00</span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 flex justify-between font-bold text-navy-900 text-base">
+                            <span>Total Amount Payable:</span>
+                            <span class="font-mono text-gold-600" id="summaryTotalAmount">₱8,765.00</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button onclick="goToStep(2)" class="px-8 py-3 bg-navy-800 hover:bg-navy-900 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2">
+                            <span>Continue to Payment Method</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2 CONTENT: Select Payment Method -->
+                <div id="payment-step-2" class="p-6 sm:p-8 max-w-3xl mx-auto space-y-6 hidden">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">Select Channel / Payment Method</h3>
+
+                    <!-- Method Radio Selector -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- Option 1: E-Wallet -->
+                        <label onclick="selectMethod('ewallet')" class="border-2 rounded-xl p-4 cursor-pointer hover:border-gold-500 transition text-center flex flex-col items-center justify-center space-y-2 bg-white" id="method-card-ewallet">
+                            <input type="radio" name="paymentChannel" value="ewallet" checked class="hidden">
+                            <div class="w-12 h-12 rounded-full bg-gold-100 text-gold-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <span class="font-bold text-xs text-navy-900">E-Wallet (GCash/Maya)</span>
+                            <span class="text-[10px] text-slate-500">Instant Automated Verification</span>
+                        </label>
+
+                        <!-- Option 2: Card -->
+                        <label onclick="selectMethod('card')" class="border-2 rounded-xl p-4 cursor-pointer hover:border-gold-500 transition text-center flex flex-col items-center justify-center space-y-2 bg-white" id="method-card-card">
+                            <input type="radio" name="paymentChannel" value="card" class="hidden">
+                            <div class="w-12 h-12 rounded-full bg-gold-100 text-gold-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-credit-card"></i>
+                            </div>
+                            <span class="font-bold text-xs text-navy-900">Debit / Credit Card</span>
+                            <span class="text-[10px] text-slate-500">Visa, Mastercard, JCB</span>
+                        </label>
+
+                        <!-- Option 3: Branch OTC -->
+                        <label onclick="selectMethod('branch')" class="border-2 rounded-xl p-4 cursor-pointer hover:border-gold-500 transition text-center flex flex-col items-center justify-center space-y-2 bg-white" id="method-card-branch">
+                            <input type="radio" name="paymentChannel" value="branch" class="hidden">
+                            <div class="w-12 h-12 rounded-full bg-gold-50 text-gold-600 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+                            <span class="font-bold text-xs text-navy-900">Over-The-Counter</span>
+                            <span class="text-[10px] text-slate-500">Batangas Branch Teller Code</span>
+                        </label>
+                    </div>
+
+                    <!-- Dynamic Fields based on channel -->
+                    <div id="method-fields-ewallet" class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">E-Wallet Provider</label>
+                            <select id="ewalletProvider" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                                <option value="GCash">GCash Philippines</option>
+                                <option value="Maya">Maya (PayMaya)</option>
+                                <option value="GrabPay">GrabPay</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Mobile Number</label>
+                            <input type="text" id="ewalletPhone" placeholder="0917 123 4567" value="09919905177" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <div id="method-fields-card" class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4 hidden">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cardholder Name</label>
+                            <input type="text" id="cardName" placeholder="Juan De La Cruz" value="Juan De La Cruz" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Card Number</label>
+                            <input type="text" id="cardNumber" placeholder="4532 •••• •••• 8890" value="4532 9012 8841 8890" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Expiry Date</label>
+                                <input type="text" id="cardExpiry" placeholder="MM/YY" value="08/28" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">CVV Code</label>
+                                <input type="password" id="cardCvv" placeholder="•••" value="888" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="method-fields-branch" class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-600 hidden">
+                        <p class="font-bold text-slate-800">Branch Teller Voucher Instructions:</p>
+                        <p>Present the generated reference code at the ALAE Bank Batangas Main Teller counter or partner OTC payment centers.</p>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <button onclick="goToStep(1)" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl transition">
+                            &larr; Back
+                        </button>
+                        <button onclick="goToStep(3)" class="px-8 py-3 bg-navy-800 hover:bg-navy-900 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2">
+                            <span>Review Payment</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3 CONTENT: Review & Confirm -->
+                <div id="payment-step-3" class="p-6 sm:p-8 max-w-3xl mx-auto space-y-6 hidden">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">Review Payment Details</h3>
+
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <tr class="border-b border-slate-100 bg-slate-50">
+                                <td class="p-3.5 text-slate-500 font-medium">Borrower Account:</td>
+                                <td class="p-3.5 font-bold font-mono text-navy-900 text-right" id="revAccount">AL-PL-884920</td>
+                            </tr>
+                            <tr class="border-b border-slate-100">
+                                <td class="p-3.5 text-slate-500 font-medium">Account Name:</td>
+                                <td class="p-3.5 font-semibold text-slate-800 text-right" id="revName">Juan De La Cruz</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50">
+                                <td class="p-3.5 text-slate-500 font-medium">Selected Payment Channel:</td>
+                                <td class="p-3.5 font-semibold text-slate-800 text-right" id="revChannel">E-Wallet (GCash)</td>
+                            </tr>
+                            <tr class="border-b border-slate-100">
+                                <td class="p-3.5 text-slate-500 font-medium">Loan Installment Amount:</td>
+                                <td class="p-3.5 font-mono text-slate-800 text-right" id="revPrincipal">₱8,750.00</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50">
+                                <td class="p-3.5 text-slate-500 font-medium">Convenience Fee:</td>
+                                <td class="p-3.5 font-mono text-slate-800 text-right" id="revFee">₱15.00</td>
+                            </tr>
+                            <tr class="bg-navy-900 text-white font-bold">
+                                <td class="p-4">TOTAL CHARGE AMOUNT:</td>
+                                <td class="p-4 font-mono text-gold-400 text-lg text-right" id="revTotal">₱8,765.00</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Authorization Checkbox -->
+                    <div class="flex items-start gap-3 p-4 bg-gold-50 rounded-xl border border-gold-200">
+                        <input type="checkbox" id="authCheck" class="mt-1 w-4 h-4 text-navy-800 border-slate-300 rounded focus:ring-navy-800">
+                        <label for="authCheck" class="text-xs text-gold-700 leading-relaxed cursor-pointer">
+                            I hereby authorize <strong>ALAE Bank Batangas</strong> to process this loan repayment transaction. I verify that all submitted account numbers and amount figures are accurate under the Bangko Sentral ng Pilipinas consumer guidelines.
+                        </label>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <button onclick="goToStep(2)" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl transition">
+                            &larr; Back
+                        </button>
+                        <button onclick="processFinalPayment()" id="paySubmitBtn" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-lock text-xs"></i>
+                            <span>Authorize & Submit Payment</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4 CONTENT: Digital Proof of Payment Receipt -->
+                <div id="payment-step-4" class="p-6 sm:p-8 max-w-2xl mx-auto space-y-6 hidden">
+                    <!-- Print Target Container -->
+                    <div id="printableReceipt" class="bg-white p-8 rounded-2xl border-2 border-gold-500 shadow-xl relative overflow-hidden">
+                        <!-- Watermark Seal -->
+                        <div class="absolute right-4 bottom-4 opacity-5 pointer-events-none text-navy-900 text-9xl">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+
+                        <!-- Receipt Header -->
+                        <div class="receipt-brand-header text-center pb-6 border-b-2 border-slate-800">
+                            <img src="alae-bank-logo.png" class="receipt-logo" alt="ALAE BANK — All Lending Activities are Equitable">
+                            <div class="text-xs text-slate-600 mt-1">Evangelista St., Batangas City • Tel: +63 991 990 5177</div>
+                            <div class="mt-3 inline-block px-4 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-xs font-bold uppercase tracking-widest">
+                                <i class="fa-solid fa-check-circle mr-1"></i> Payment Verified & Posted
+                            </div>
+                        </div>
+
+                        <!-- Receipt Breakdown -->
+                        <div class="py-6 space-y-3 text-xs sm:text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Transaction Reference Code:</span>
+                                <span class="font-mono font-bold text-navy-900" id="rcptRef">#ALAE-2026-99201</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Date & Timestamp:</span>
+                                <span class="font-medium text-slate-800" id="rcptDate">Oct 7, 2026 • 11:42 PM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Borrower Account No:</span>
+                                <span class="font-mono font-bold text-slate-800" id="rcptAccount">AL-PL-884920</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Borrower Name:</span>
+                                <span class="font-bold text-slate-800" id="rcptName">Juan De La Cruz</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Payment Channel:</span>
+                                <span class="font-medium text-slate-800" id="rcptMethod">GCash E-Wallet</span>
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-200 space-y-2">
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Loan Principal Paid:</span>
+                                    <span class="font-mono" id="rcptPrincipal">₱8,750.00</span>
+                                </div>
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Processing Fee:</span>
+                                    <span class="font-mono" id="rcptFee">₱15.00</span>
+                                </div>
+                                <div class="flex justify-between text-base font-bold text-navy-900 pt-2 border-t border-slate-300">
+                                    <span>Total Amount Settled:</span>
+                                    <span class="font-mono text-emerald-700" id="rcptTotal">₱8,765.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Receipt Footer Stamp -->
+                        <div class="pt-6 border-t border-dashed border-slate-300 text-center text-[11px] text-slate-500 space-y-1">
+                            <p>This serves as an official electronic digital receipt issued by ALAE Bank.</p>
+                            <p class="font-mono text-[10px]">BSP Regulatory License No: BL-2026-BAT-8812</p>
+                        </div>
+                    </div>
+
+                    <!-- Receipt Actions -->
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        <button onclick="printOfficialReceipt()" class="px-6 py-2.5 bg-navy-800 hover:bg-navy-900 text-white font-semibold rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i> Print Official Receipt
+                        </button>
+                        <button onclick="switchTab('history')" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-list"></i> View Payment History
+                        </button>
+                        <button onclick="resetPaymentWizard()" class="px-6 py-2.5 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-rotate-right"></i> Pay Another Loan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- TAB 3: LOAN PRODUCTS SHOWCASE -->
+        <!-- ========================================== -->
+        <section id="view-products" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                    <div>
+                        <h2 class="font-serif text-xl font-bold text-navy-900">ALAE Bank Financing Products</h2>
+                        <p class="text-xs sm:text-sm text-slate-600 mt-1">Competitive rates and equitable loan payment terms tailored for every borrower.</p>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-50 border border-gold-200 rounded-full text-[11px] font-bold text-gold-700">
+                        <i class="fa-solid fa-layer-group"></i>
+                        4 Loan Products
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <!-- Product 1: Personal Loan -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-gold-100 text-gold-600 flex items-center justify-center text-xl mb-4">
+                                <i class="fa-solid fa-user-tag"></i>
+                            </div>
+                            <h3 class="font-serif font-bold text-lg text-navy-900 mb-1">Personal Loan</h3>
+                            <p class="text-xs text-slate-500 mb-4">Flexible funds for education, medical, or emergency needs.</p>
+
+                            <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Interest Rate:</span>
+                                    <span class="font-bold text-slate-800">1.1% / month</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Max Loan Limit:</span>
+                                    <span class="font-bold text-slate-800">₱500,000.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Flexible Term:</span>
+                                    <span class="font-bold text-slate-800">12 - 36 mos</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 space-y-2">
+                            <button onclick="applyForProduct('Personal Loan');" class="w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-white rounded-xl text-xs font-bold transition">
+                                Apply for Personal Loan
+                            </button>
+                            <button onclick="quickPay('AL-PL-884920', 8750)" class="w-full py-2.5 bg-navy-800 hover:bg-navy-900 text-white rounded-xl text-xs font-bold transition">
+                                Pay Existing Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 2: Vehicle -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-gold-100 text-gold-600 flex items-center justify-center text-xl mb-4">
+                                <i class="fa-solid fa-car"></i>
+                            </div>
+                            <h3 class="font-serif font-bold text-lg text-navy-900 mb-1">Vehicle</h3>
+                            <p class="text-xs text-slate-500 mb-4">Finance eligible new or quality pre-owned vehicles.</p>
+
+                            <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Interest Rate:</span>
+                                    <span class="font-bold text-slate-800">0.89% / month</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Max Loan Limit:</span>
+                                    <span class="font-bold text-slate-800">₱2,500,000.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Flexible Term:</span>
+                                    <span class="font-bold text-slate-800">24 - 60 mos</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 space-y-2">
+                            <button onclick="applyForProduct('Vehicle')" class="w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-white rounded-xl text-xs font-bold transition">
+                                Apply for Vehicle Loan
+                            </button>
+                            <button onclick="quickPay('AL-VH-304912', 3200)" class="w-full py-2.5 bg-navy-800 hover:bg-navy-900 text-white rounded-xl text-xs font-bold transition">
+                                Pay Existing Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 3: Mortgage -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-gold-100 text-gold-600 flex items-center justify-center text-xl mb-4">
+                                <i class="fa-solid fa-house-chimney"></i>
+                            </div>
+                            <h3 class="font-serif font-bold text-lg text-navy-900 mb-1">Mortgage</h3>
+                            <p class="text-xs text-slate-500 mb-4">Low-interest long-term financing for residential homes.</p>
+
+                            <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Interest Rate:</span>
+                                    <span class="font-bold text-slate-800">6.5% / annum</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Max Loan Limit:</span>
+                                    <span class="font-bold text-slate-800">₱10,000,000.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Flexible Term:</span>
+                                    <span class="font-bold text-slate-800">up to 20 years</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 space-y-2">
+                            <button onclick="applyForProduct('Mortgage')" class="w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-white rounded-xl text-xs font-bold transition">
+                                Apply for Mortgage
+                            </button>
+                            <button onclick="quickPay('AL-MG-100492', 22000)" class="w-full py-2.5 bg-navy-800 hover:bg-navy-900 text-white rounded-xl text-xs font-bold transition">
+                                Pay Existing Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 4: Real Estate Loan -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-gold-100 text-gold-600 flex items-center justify-center text-xl mb-4">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                            <h3 class="font-serif font-bold text-lg text-navy-900 mb-1">Real Estate Loan</h3>
+                            <p class="text-xs text-slate-500 mb-4">Financing for property acquisition, construction, or improvement.</p>
+
+                            <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Interest Rate:</span>
+                                    <span class="font-bold text-slate-800">7.25% / annum</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Max Loan Limit:</span>
+                                    <span class="font-bold text-slate-800">₱15,000,000.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Flexible Term:</span>
+                                    <span class="font-bold text-slate-800">up to 15 years</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 space-y-2">
+                            <button onclick="applyForProduct('Real Estate Loan')" class="w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-white rounded-xl text-xs font-bold transition">
+                                Apply for Real Estate Loan
+                            </button>
+                            <button onclick="quickPay('AL-RE-100492', 25000)" class="w-full py-2.5 bg-navy-800 hover:bg-navy-900 text-white rounded-xl text-xs font-bold transition">
+                                Pay Existing Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- TAB 4: APPLY FOR A LOAN -->
+        <!-- ========================================== -->
+        <section id="view-apply" class="hidden space-y-6">
+            <div class="navy-gradient rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-gold-500/30">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <p class="text-xs text-gold-300 uppercase tracking-widest font-bold mb-2">New Financing Application</p>
+                        <h2 id="applicationProductHeading" class="font-serif text-2xl font-bold">Apply for a Loan</h2>
+                        <p class="text-sm text-slate-300 mt-2 max-w-2xl">Submit your application for one of ALAE Bank's four financing products.</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-gold-500/20 border border-gold-400/40 flex items-center justify-center text-gold-300 text-2xl">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+                <form id="loanApplicationForm" onsubmit="submitLoanApplication(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Applicant Name</label>
+                            <input type="text" id="applicationName" readonly class="w-full px-3 py-2.5 text-sm bg-slate-100 border border-slate-300 rounded-lg font-semibold text-navy-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address</label>
+                            <input type="email" id="applicationEmail" readonly class="w-full px-3 py-2.5 text-sm bg-slate-100 border border-slate-300 rounded-lg text-slate-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Loan Product</label>
+                            <select id="applicationProduct" required class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                                <option value="">Select a loan product</option>
+                                <option>Personal Loan</option>
+                                <option>Vehicle</option>
+                                <option>Mortgage</option>
+                                <option>Real Estate Loan</option>
+                            </select>
+                            <p id="applicationProductHint" class="mt-1.5 text-[10px] text-slate-500">Select a financing product to begin your application.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Requested Amount</label>
+                            <input type="number" id="applicationAmount" min="1000" step="500" required placeholder="₱100,000.00" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preferred Term</label>
+                            <select id="applicationTerm" required class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                                <option value="">Select term</option>
+                                <option>12 months</option>
+                                <option>24 months</option>
+                                <option>36 months</option>
+                                <option>48 months</option>
+                                <option>60 months</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Purpose of Loan</label>
+                            <input type="text" id="applicationPurpose" required placeholder="e.g. Home improvement, vehicle purchase" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-800 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl bg-gold-50 border border-gold-200 p-4 text-xs text-gold-800">
+                        <i class="fa-solid fa-circle-info mr-1"></i>
+                        Your application will be submitted for review. Approval is subject to ALAE Bank's assessment and requirements.
+                    </div>
+
+                    <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-gold-500 hover:bg-gold-600 text-white rounded-xl text-sm font-bold shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Submit Loan Application
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h3 class="font-serif text-lg font-bold text-navy-900">Application Status</h3>
+                        <p class="text-xs text-slate-500 mt-1">Track your submitted financing applications.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-gold-50 border border-gold-200 text-gold-700 text-[10px] font-bold">SECURE REVIEW</span>
+                </div>
+                <div id="applicationTracker" class="space-y-3">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 text-center">No applications submitted yet.</div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- TAB 5: PAYMENT HISTORY LOGS -->
+
+        <!-- ========================================== -->
+        <section id="view-history" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="font-serif text-xl font-bold text-navy-900">Borrower Payment History Log</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Recorded successful electronic and over-the-counter repayments</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="filterLogs('ALL')" class="px-3 py-1.5 bg-navy-800 text-white rounded-lg text-xs font-semibold">All</button>
+                        <button onclick="filterLogs('Personal Loan')" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold">Personal</button>
+                        <button onclick="filterLogs('Vehicle')" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold">Vehicle</button>
+                        <button onclick="filterLogs('Mortgage')" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold">Mortgage</button>
+                        <button onclick="filterLogs('Real Estate Loan')" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold">Real Estate</button>
+                        <button onclick="downloadStatement()" class="px-3 py-1.5 bg-gold-500 text-navy-950 hover:bg-gold-600 rounded-lg text-xs font-bold"><i class="fa-solid fa-download mr-1"></i> Statement</button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold border-b border-slate-200">
+                                <th class="p-3">Ref Code</th>
+                                <th class="p-3">Date & Time</th>
+                                <th class="p-3">Account No</th>
+                                <th class="p-3">Method</th>
+                                <th class="p-3 text-right">Amount Paid</th>
+                                <th class="p-3 text-center">Status</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentHistoryTableBody" class="divide-y divide-slate-100">
+                            <!-- Dynamically Generated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- TAB 6: CUSTOMER PROFILE & SECURITY -->
+        <!-- ========================================== -->
+        <section id="view-profile" class="hidden space-y-6">
+            <div class="navy-gradient rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-gold-500/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gold-500 text-navy-950 flex items-center justify-center text-xl font-bold" id="profileInitials">JD</div>
+                    <div>
+                        <p class="text-xs text-gold-300 uppercase tracking-widest font-bold">Customer Profile</p>
+                        <h2 class="font-serif text-2xl font-bold" id="profileNameHeading">Juan De La Cruz</h2>
+                        <p class="text-xs text-slate-300 mt-1">Customer No. <span id="profileCustomerNo">AL-PL-884920</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-5">
+                        <div><h3 class="font-serif text-lg font-bold text-navy-900">Personal Information</h3><p class="text-xs text-slate-500 mt-1">Your registered account information.</p></div>
+                        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full"><i class="fa-solid fa-circle-check mr-1"></i>Verified Account</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="p-3 rounded-lg bg-slate-50"><span class="block text-[10px] uppercase font-bold text-slate-400">Full Name</span><span id="profileFullName" class="font-semibold text-navy-900">Juan De La Cruz</span></div>
+                        <div class="p-3 rounded-lg bg-slate-50"><span class="block text-[10px] uppercase font-bold text-slate-400">Email</span><span id="profileEmail" class="font-semibold text-navy-900">borrower@alae.ph</span></div>
+                        <div class="p-3 rounded-lg bg-slate-50"><span class="block text-[10px] uppercase font-bold text-slate-400">Primary Loan Account</span><span id="profileAccount" class="font-mono font-semibold text-navy-900">AL-PL-884920</span></div>
+                        <div class="p-3 rounded-lg bg-slate-50"><span class="block text-[10px] uppercase font-bold text-slate-400">Account Status</span><span class="font-semibold text-emerald-700">Active & Good Standing</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="font-serif text-lg font-bold text-navy-900 mb-4">Security Center</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-100"><span><i class="fa-solid fa-shield-halved text-emerald-600 mr-2"></i>Two-step verification</span><b class="text-emerald-700">ON</b></div>
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200"><span><i class="fa-solid fa-clock text-gold-600 mr-2"></i>Session timeout</span><b class="text-navy-900">10 min</b></div>
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200"><span class="block text-slate-400 uppercase font-bold text-[9px]">Last secure login</span><b id="lastLoginText" class="text-navy-900">This session</b></div>
+                    </div>
+                    <button onclick="showToast('Password change request opened. This prototype does not transmit credentials.', 'info')" class="w-full mt-4 py-2.5 bg-navy-800 hover:bg-navy-900 text-white rounded-lg text-xs font-bold">Change Password</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 7: SECURITY & FAQS -->
+        <!-- ========================================== -->
+        <section id="view-faq" class="hidden space-y-6">
+            <!-- Security Compliance Badges -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-gold-100 text-gold-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-navy-900">256-Bit TLS Security</h4>
+                        <p class="text-xs text-slate-500 mt-1">All payment form submissions are encrypted end-to-end to protect sensitive credentials.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-navy-900">Data Privacy Compliance</h4>
+                        <p class="text-xs text-slate-500 mt-1">Full compliance with the Data Privacy Act of 2012 (RA 10173) for financial record keeping.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-navy-900">BSP Regulated Entity</h4>
+                        <p class="text-xs text-slate-500 mt-1">Supervised under standard banking regulations enforced by Bangko Sentral ng Pilipinas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQs Accordion -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200">
+                <h3 class="font-serif text-xl font-bold text-navy-900 mb-4">Frequently Asked Questions</h3>
+
+                <div class="space-y-4">
+                    <details class="group p-4 bg-slate-50 rounded-xl border border-slate-200 [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between font-bold text-sm text-navy-900 cursor-pointer">
+                            <span>How long does it take for online payments to reflect?</span>
+                            <span class="text-slate-400 group-open:rotate-180 transition"><i class="fa-solid fa-chevron-down"></i></span>
+                        </summary>
+                        <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                            Payments made via E-Wallet (GCash / Maya) and Debit/Credit card reflect immediately in your account balance and payment history log. Over-The-Counter payments at branch tellers process within 1 business hour.
+                        </p>
+                    </details>
+
+                    <details class="group p-4 bg-slate-50 rounded-xl border border-slate-200 [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between font-bold text-sm text-navy-900 cursor-pointer">
+                            <span>Is there a transaction processing fee?</span>
+                            <span class="text-slate-400 group-open:rotate-180 transition"><i class="fa-solid fa-chevron-down"></i></span>
+                        </summary>
+                        <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                            A minimal flat fee of ₱15.00 is charged by electronic payment gateways per successful transaction. Over-the-counter payments directly at our Batangas Main Branch carry ₱0 convenience fees.
+                        </p>
+                    </details>
+
+                    <details class="group p-4 bg-slate-50 rounded-xl border border-slate-200 [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between font-bold text-sm text-navy-900 cursor-pointer">
+                            <span>Where can I request official BIR tax receipts for business loans?</span>
+                            <span class="text-slate-400 group-open:rotate-180 transition"><i class="fa-solid fa-chevron-down"></i></span>
+                        </summary>
+                        <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                            Digital receipts generated through this portal are valid for proof of payment. For BIR-stamped physical Official Receipts (OR), visit our Evangelista St., Batangas City branch or email request to <strong>alaebank@gmail.com</strong> with your transaction reference number.
+                        </p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-inner">
+            <div class="footer-brand-group">
+                <img src="alae-bank-logo.png" alt="ALAE BANK — All Lending Activities are Equitable" class="footer-logo">
+                <div><strong>ALAE BANK</strong><span>All Lending Activities are Equitable</span></div>
+            </div>
+            <div class="footer-links"><span>Quick Links</span><button onclick="switchTab('dashboard')">Dashboard</button><button onclick="switchTab('products')">Loan Products</button><button onclick="switchTab('history')">Payment History</button></div>
+            <div class="footer-contact"><span>Contact Us</span><p><i class="fa-solid fa-phone"></i> +63 991 990 5177</p><p><i class="fa-regular fa-envelope"></i> alaebank@gmail.com</p><p><i class="fa-solid fa-location-dot"></i> Evangelista St., Batangas City</p></div>
+            <div class="footer-copyright"><span>ALAE BANK DIGITAL PORTAL</span><small>© 2026 ALAE Bank. All rights reserved.</small><small>Demo interface for educational use.</small></div>
+        </div>
+    </footer>
+
+
+    <!-- TOAST NOTIFICATION FLOATER -->
+    <!-- Demo OTP Verification Modal -->
+    <div id="otpModal" class="hidden fixed inset-0 z-[100] bg-navy-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 border border-gold-400/30">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-gold-100 text-gold-700 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-mobile-screen-button"></i></div>
+            <h3 class="font-serif text-xl font-bold text-navy-900 text-center">Verify Your Login</h3>
+            <p class="text-xs text-slate-500 text-center mt-2">Enter the 6-digit verification code sent to your registered contact.</p>
+            <div class="mt-5 p-3 rounded-lg bg-gold-50 border border-gold-200 text-center text-xs text-gold-800"><b>Prototype OTP:</b> <span id="demoOtpCode" class="font-mono font-bold tracking-widest">123456</span></div>
+            <input id="otpInput" maxlength="6" inputmode="numeric" class="w-full mt-4 px-4 py-3 text-center text-xl tracking-[0.5em] font-mono font-bold border border-slate-300 rounded-xl focus:ring-2 focus:ring-gold-500 outline-none" placeholder="000000">
+            <button onclick="verifyOtp()" class="w-full mt-4 py-3 bg-gold-500 hover:bg-gold-600 text-navy-950 rounded-xl font-bold text-sm">Verify & Continue</button>
+            <button onclick="cancelOtp()" class="w-full mt-2 py-2 text-xs text-slate-500 hover:text-navy-900">Cancel</button>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 text-xs font-semibold">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toastMsg">Notification message</span>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC AND APPLICATION STATE -->
+    <!-- ========================================== -->
+    
+    <script src="app.js" defer></script>
+</body>
+</html>
